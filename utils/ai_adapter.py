@@ -257,6 +257,12 @@ class OpenRouterAdapter:
                         attempt + 1,
                         wait_time,
                     )
+                    if attempt > 0:
+                        logger.warning("[RETRY] Recreating client connection to avoid stale connection")
+                        await self.client.aclose()
+                        limits = httpx.Limits(max_connections=10, max_keepalive_connections=5)
+                        timeout = httpx.Timeout(Config.REQUEST_TIMEOUT, connect=10.0)
+                        self.client = httpx.AsyncClient(limits=limits, timeout=timeout, http2=False)
                     await asyncio.sleep(wait_time)
                     continue
                 else:
@@ -340,6 +346,11 @@ class OpenRouterAdapter:
                         type(e).__name__,
                         wait_time,
                     )
+                    if attempt > 0:
+                        await self.client.aclose()
+                        limits = httpx.Limits(max_connections=10, max_keepalive_connections=5)
+                        timeout = httpx.Timeout(Config.REQUEST_TIMEOUT, connect=10.0)
+                        self.client = httpx.AsyncClient(limits=limits, timeout=timeout, http2=False)
                     await asyncio.sleep(wait_time)
                     continue
                 return ""
