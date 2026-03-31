@@ -203,72 +203,77 @@ class OpenRouterAdapter:
         for attempt in range(max_retries):
             full_response = ""
             reasoning_buffer = ""
-            try:
-                # 2. Reuse persistent self.client to improve handshake efficiency
-                await self._wait_for_rate_limit()
-                async with self.client.stream("POST", self.base_url + "/chat/completions", headers=headers, json=payload) as response:
-                    if response.status_code == 429:
-                        # Encountered 429 rate limit, execute heavy penalty wait
-                        wait_time = Config.OPENROUTER_429_COOLDOWN_SECONDS
-                        logger.warning("[RATE LIMIT] %s triggered rate limit, waiting %ss for penalty...", name, wait_time)
-                        self.rate_limiter.enter_cooldown(wait_time)
-                        continue
-
-                    if response.status_code != 200:
-                        return f"❌ AI API error ({response.status_code})"
-
-                    async for line in response.aiter_lines():
-                        if not line or not line.startswith("data: "):
+            limits = httpx.Limits(max_connections=5, max_keepalive_connections=2)
+            timeout = httpx.Timeout(Config.REQUEST_TIMEOUT, connect=10.0)
+            async with httpx.AsyncClient(limits=limits, timeout=timeout, http2=False) as client:
+                try:
+                    await self._wait_for_rate_limit()
+                    async with client.stream("POST", self.base_url + "/chat/completions", headers=headers, json=payload) as response:
+                        if response.status_code == 429:
+                            wait_time = Config.OPENROUTER_429_COOLDOWN_SECONDS
+                            logger.warning("[RATE LIMIT] %s triggered rate limit, waiting %ss for penalty...", name, wait_time)
+                            self.rate_limiter.enter_cooldown(wait_time)
                             continue
-                        
-                        data_str = line[6:]
-                        if data_str == "[DONE]":
-                            break
+
+                        if response.status_code != 200:
+                            return f"❌ AI API error ({response.status_code})"
+
+                        async for line in response.aiter_lines():
+                            if not line or not line.startswith("data: "):
+                                continue
                             
-                        try:
-                            data = json.loads(data_str)
-                            if data.get('choices') and len(data['choices']) > 0:
-                                delta = data['choices'][0].get('delta') or {}
-                                chunk = _extract_stream_text_from_delta(delta, include_reasoning=False)
-                                if Config.OPENROUTER_STREAM_FALLBACK_TO_REASONING:
-                                    reasoning_buffer += _extract_delta_reasoning_only(delta)
-                                if chunk:
-                                    full_response += chunk
-                                    if chunk_callback:
-                                        chunk_callback(chunk)
-                        except (json.JSONDecodeError, IndexError, KeyError):
-                            continue
+                            data_str = line[6:]
+                            if data_str == "[DONE]":
+                                break
+                                
+                            try:
+                                data = json.loads(data_str)
+                                if data.get('choices') and len(data['choices']) > 0:
+                                    delta = data['choices'][0].get('delta') or {}
+                                    chunk = _extract_stream_text_from_delta(delta, include_reasoning=False)
+                                    if Config.OPENROUTER_STREAM_FALLBACK_TO_REASONING:
+                                        reasoning_buffer += _extract_delta_reasoning_only(delta)
+                                    if chunk:
+                                        full_response += chunk
+                                        if chunk_callback:
+                                            chunk_callback(chunk)
+                            except (json.JSONDecodeError, IndexError, KeyError):
+                                continue
 
-                text_out = full_response.strip()
-                if not text_out and Config.OPENROUTER_STREAM_FALLBACK_TO_REASONING and reasoning_buffer.strip():
-                    text_out = reasoning_buffer.strip()
-                if text_out:
-                    self.cache[cache_key] = text_out
-                    return text_out
+                    text_out = full_response.strip()
+                    if not text_out and Config.OPENROUTER_STREAM_FALLBACK_TO_REASONING and reasoning_buffer.strip():
+                        text_out = reasoning_buffer.strip()
+                    if text_out:
+                        self.cache[cache_key] = text_out
+                        return text_out
                 
-            except (httpx.TimeoutException, httpx.TransportError, httpx.LocalProtocolError, httpx.RemoteProtocolError) as e:
-                # 3. Enhanced exception handling: include timeout and perform exponential backoff
-                if attempt < max_retries - 1:
-                    wait_time = 2 ** (attempt + 1)
-                    logger.warning(
-                        "[RETRY] %s request error (%s), will retry %s in %ss...",
-                        name,
-                        type(e).__name__,
-                        attempt + 1,
-                        wait_time,
-                    )
-                    if attempt > 0:
-                        logger.warning("[RETRY] Recreating client connection to avoid stale connection")
-                        await self.client.aclose()
-                        limits = httpx.Limits(max_connections=10, max_keepalive_connections=5)
-                        timeout = httpx.Timeout(Config.REQUEST_TIMEOUT, connect=10.0)
-                        self.client = httpx.AsyncClient(limits=limits, timeout=timeout, http2=False)
-                    await asyncio.sleep(wait_time)
-                    continue
-                else:
-                    return f"❌ Network connection repeatedly interrupted: {str(e)}"
-            except Exception as e:
-                return f"❌ Unexpected error: {str(e)}"
+                except (httpx.LocalProtocolError, httpx.RemoteProtocolError) as e:
+                    if attempt < max_retries - 1:
+                        logger.warning(
+                            "[PROTOCOL ERROR] %s (%s), retrying immediately with new connection...",
+                            name,
+                            type(e).__name__,
+                        )
+                        await asyncio.sleep(0.5)
+                        continue
+                    else:
+                        return f"❌ Protocol error: {str(e)}"
+                except (httpx.TimeoutException, httpx.TransportError) as e:
+                    if attempt < max_retries - 1:
+                        wait_time = 2 ** (attempt + 1)
+                        logger.warning(
+                            "[RETRY] %s request error (%s), will retry %s in %ss...",
+                            name,
+                            type(e).__name__,
+                            attempt + 1,
+                            wait_time,
+                        )
+                        await asyncio.sleep(wait_time)
+                        continue
+                    else:
+                        return f"❌ Network connection repeatedly interrupted: {str(e)}"
+                except Exception as e:
+                    return f"❌ Unexpected error: {str(e)}"
         
         return "❌ Exceeded maximum retry attempts"
 
@@ -317,46 +322,53 @@ class OpenRouterAdapter:
                 logger.warning("OPENROUTER_CHAT_COMPLETIONS_EXTRA_JSON is not valid JSON, ignoring.")
 
         for attempt in range(Config.MAX_RETRIES):
-            try:
-                await self._wait_for_rate_limit()
-                response = await self.client.post(
-                    self.base_url + "/chat/completions",
-                    headers=headers,
-                    json=payload,
-                )
-                if response.status_code == 429:
-                    wait_time = Config.OPENROUTER_429_COOLDOWN_SECONDS
-                    self.rate_limiter.enter_cooldown(wait_time)
-                    logger.warning("[RATE LIMIT] Overview request triggered rate limit, entering %.1f second cooldown.", wait_time)
-                    continue
-
-                response.raise_for_status()
-                payload_json = response.json()
-                choices = payload_json.get("choices") or []
-                if not choices:
-                    return ""
-
-                message = choices[0].get("message") or {}
-                return str(message.get("content") or "").strip()
-            except (httpx.TimeoutException, httpx.TransportError, httpx.LocalProtocolError, httpx.RemoteProtocolError) as e:
-                if attempt < Config.MAX_RETRIES - 1:
-                    wait_time = 2 ** (attempt + 1)
-                    logger.warning(
-                        "[RETRY] Overview request error (%s), will retry in %.1f seconds.",
-                        type(e).__name__,
-                        wait_time,
+            limits = httpx.Limits(max_connections=5, max_keepalive_connections=2)
+            timeout = httpx.Timeout(Config.REQUEST_TIMEOUT, connect=10.0)
+            async with httpx.AsyncClient(limits=limits, timeout=timeout, http2=False) as client:
+                try:
+                    await self._wait_for_rate_limit()
+                    response = await client.post(
+                        self.base_url + "/chat/completions",
+                        headers=headers,
+                        json=payload,
                     )
-                    if attempt > 0:
-                        await self.client.aclose()
-                        limits = httpx.Limits(max_connections=10, max_keepalive_connections=5)
-                        timeout = httpx.Timeout(Config.REQUEST_TIMEOUT, connect=10.0)
-                        self.client = httpx.AsyncClient(limits=limits, timeout=timeout, http2=False)
-                    await asyncio.sleep(wait_time)
-                    continue
-                return ""
-            except Exception as e:
-                logger.warning("Overview generation failed: %s", e)
-                return ""
+                    if response.status_code == 429:
+                        wait_time = Config.OPENROUTER_429_COOLDOWN_SECONDS
+                        self.rate_limiter.enter_cooldown(wait_time)
+                        logger.warning("[RATE LIMIT] Overview request triggered rate limit, entering %.1f second cooldown.", wait_time)
+                        continue
+
+                    response.raise_for_status()
+                    payload_json = response.json()
+                    choices = payload_json.get("choices") or []
+                    if not choices:
+                        return ""
+
+                    message = choices[0].get("message") or {}
+                    return str(message.get("content") or "").strip()
+                except (httpx.LocalProtocolError, httpx.RemoteProtocolError) as e:
+                    if attempt < Config.MAX_RETRIES - 1:
+                        logger.warning(
+                            "[PROTOCOL ERROR] Overview (%s), retrying immediately with new connection...",
+                            type(e).__name__,
+                        )
+                        await asyncio.sleep(0.5)
+                        continue
+                    return ""
+                except (httpx.TimeoutException, httpx.TransportError) as e:
+                    if attempt < Config.MAX_RETRIES - 1:
+                        wait_time = 2 ** (attempt + 1)
+                        logger.warning(
+                            "[RETRY] Overview request error (%s), will retry in %.1f seconds.",
+                            type(e).__name__,
+                            wait_time,
+                        )
+                        await asyncio.sleep(wait_time)
+                        continue
+                    return ""
+                except Exception as e:
+                    logger.warning("Overview generation failed: %s", e)
+                    return ""
 
         return ""
 
