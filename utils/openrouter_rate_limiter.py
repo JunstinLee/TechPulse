@@ -59,9 +59,18 @@ class OpenRouterRateLimiter:
             return wait_time, reason, len(self._request_times)
 
     async def acquire(self) -> None:
+        import random
         while True:
             wait_time, reason, used_slots = self._reserve_slot()
             if wait_time == 0.0:
+                jitter = random.uniform(0, 0.5)
+                if jitter > 0:
+                    logger.warning(
+                        "[Rate Limiter] Jitter %.2fs to avoid thundering herd",
+                        jitter,
+                    )
+                    await asyncio.sleep(jitter)
+
                 logger.warning(
                     "[Rate Limiter] Request allowed | current window usage=%s/%s | min interval=%.2fs",
                     used_slots,

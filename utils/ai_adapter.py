@@ -139,7 +139,7 @@ class OpenRouterAdapter:
         # Initialize persistent client (connection pool)
         limits = httpx.Limits(max_connections=10, max_keepalive_connections=5)
         timeout = httpx.Timeout(Config.REQUEST_TIMEOUT, connect=10.0)
-        self.client = httpx.AsyncClient(limits=limits, timeout=timeout)
+        self.client = httpx.AsyncClient(limits=limits, timeout=timeout, http2=False)
         
         # Rate limiting protection state
         self.rate_limiter = get_openrouter_rate_limiter()
@@ -246,7 +246,7 @@ class OpenRouterAdapter:
                     self.cache[cache_key] = text_out
                     return text_out
                 
-            except (httpx.TimeoutException, httpx.TransportError) as e:
+            except (httpx.TimeoutException, httpx.TransportError, httpx.LocalProtocolError, httpx.RemoteProtocolError) as e:
                 # 3. Enhanced exception handling: include timeout and perform exponential backoff
                 if attempt < max_retries - 1:
                     wait_time = 2 ** (attempt + 1)
@@ -332,7 +332,7 @@ class OpenRouterAdapter:
 
                 message = choices[0].get("message") or {}
                 return str(message.get("content") or "").strip()
-            except (httpx.TimeoutException, httpx.TransportError) as e:
+            except (httpx.TimeoutException, httpx.TransportError, httpx.LocalProtocolError, httpx.RemoteProtocolError) as e:
                 if attempt < Config.MAX_RETRIES - 1:
                     wait_time = 2 ** (attempt + 1)
                     logger.warning(
