@@ -14,7 +14,7 @@
 #
 # Schedule is in UTC; modify the cron expression as needed.
 
-name: Prism pipeline
+name: TechDistill pipeline
 
 on:
   schedule:
