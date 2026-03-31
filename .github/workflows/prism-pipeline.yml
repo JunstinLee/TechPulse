@@ -83,4 +83,4 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run pipeline
-        run: python main.py
+        run: run: python $GITHUB_WORKSPACE/main.py
