@@ -1,0 +1,85 @@
+# Tech Pulse: Scheduled + Manual Crawling / AI Analysis / Reporting and Telegram Push.
+# 
+# The keys, order, and value sources of 'jobs.pipeline.env' below are consistent 
+# with the '.env-example' in the repository root:
+#   - Items requiring GitHub Actions Secrets (ensure names don't conflict with GitHub reserved words):
+#       PH_API_TOKEN            → secret PH_API_TOKEN
+#       GITHUB_TOKEN            → secret GH_TOKEN (injected as env var GITHUB_TOKEN)
+#       HF_TOKEN                → secret HF_TOKEN (Optional, defaults to empty)
+#       OPENROUTER_API_KEY      → secret OPENROUTER_API_KEY
+#       TG_BOT_TOKEN            → secret TG_BOT_TOKEN
+#       TG_CHAT_ID              → secret TG_CHAT_ID
+#       OPENROUTER_CHAT_COMPLETIONS_EXTRA_JSON → secret OPENROUTER_CHAT_COMPLETIONS_EXTRA_JSON (Optional)
+#   - Non-secret items: Use default values from .env-example, defined directly in 'env'.
+#
+# Schedule is in UTC; modify the cron expression as needed.
+
+name: Prism pipeline
+
+on:
+  schedule:
+    - cron: "0 6 * * *" # Runs daily at 06:00 UTC
+  workflow_dispatch:      # Allows manual trigger via the UI
+
+permissions:
+  contents: read
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    env:
+      # CI only (not listed in .env-example): unbuffered stdout/stderr
+      PYTHONUNBUFFERED: "1"
+      # Product Hunt API token (v2 developer token); same order as .env-example
+      PH_API_TOKEN: ${{ secrets.PH_API_TOKEN }}
+      # GitHub PAT for higher rate limits; use Actions secret GH_TOKEN (injected as GITHUB_TOKEN)
+      GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      # Hugging Face token (optional, improves rate limits); create at https://huggingface.co/settings/tokens
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      # OpenRouter API key
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      # OpenRouter-compatible API base URL
+      OPENROUTER_BASE_URL: "https://openrouter.ai/api/v1"
+      # Default model id for channel (OpenRouter) runs
+      OPENROUTER_MODEL: "google/gemini-2.0-flash-001"
+      # Telegram bot token
+      TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+      # Telegram chat id for pushes
+      TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+      # Directory to watch for new reports (default reports; used for Telegram auto-push)
+      REPORT_WATCH_DIR: reports
+      # Overview: enable overview section
+      OVERVIEW_ENABLED: "true"
+      # Overview: generate overview via AI
+      OVERVIEW_AI_ENABLED: "true"
+      # Overview: model id for overview generation
+      OVERVIEW_MODEL: "minimax/minimax-m2.5:free"
+      # Overview: max items fed into the overview
+      OVERVIEW_MAX_INPUT_ITEMS: "6"
+      # Overview: max output characters
+      OVERVIEW_MAX_OUTPUT_CHARS: "1200"
+      # Overview: include per-channel AI comments in context
+      OVERVIEW_INCLUDE_AI_COMMENT: "true"
+      # Per-channel AI comments: max characters before writing to report (0 = no truncation)
+      AI_COMMENT_MAX_CHARS: "2000"
+      # Streaming: use delta.content only; if empty, fall back to reasoning (default false)
+      OPENROUTER_STREAM_FALLBACK_TO_REASONING: "false"
+      # Channel analysis: max_tokens cap (aligned with short-comment prompts)
+      AI_COMMENT_MAX_TOKENS: "768"
+      # Optional: extra JSON merged into chat/completions body (gateway-specific); omit secret for empty
+      OPENROUTER_CHAT_COMPLETIONS_EXTRA_JSON: ${{ secrets.OPENROUTER_CHAT_COMPLETIONS_EXTRA_JSON }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run pipeline
+        run: python main.py
