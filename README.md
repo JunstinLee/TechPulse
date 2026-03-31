@@ -1,8 +1,8 @@
-# Tech Pulse
+# TechDistill
 
 [简体中文](README-CN.md)
 
-**Tech Pulse** is a noise-reducing AI information workflow for developers and independent researchers.
+**TechDistill** is a noise-reducing AI information workflow for developers and independent researchers.
 
 It scrapes trending projects and posts from GitHub, Hugging Face, and Product Hunt, enriches them with detail, uses AI to generate brief commentary and a daily overview, and produces a set of Markdown reports you can archive, search, and share.
 
@@ -12,7 +12,7 @@ It scrapes trending projects and posts from GitHub, Hugging Face, and Product Hu
 
 In a world of information overload, what is often scarce is not raw data, but stable, low-noise material you can keep reading and reasoning from.
 
-Tech Pulse Pipeline aims to be more than a one-off trending scraper: it is a path from raw inputs to higher-signal outputs—continuous collection, measured deep dives, structured organization, summarized archives, and steady delivery of what matters. It is meant to grow into a lightweight, long-lived personal technical information pipeline.
+TechDistill Pipeline aims to be more than a one-off trending scraper: it is a path from raw inputs to higher-signal outputs—continuous collection, measured deep dives, structured organization, summarized archives, and steady delivery of what matters. It is meant to grow into a lightweight, long-lived personal technical information pipeline.
 
 ---
 

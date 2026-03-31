@@ -1,4 +1,4 @@
-# Tech Pulse: Scheduled + Manual Crawling / AI Analysis / Reporting and Telegram Push.
+# TechDistill: Scheduled + Manual Crawling / AI Analysis / Reporting and Telegram Push.
 # 
 # The keys, order, and value sources of 'jobs.pipeline.env' below are consistent 
 # with the '.env-example' in the repository root:
