@@ -28,6 +28,7 @@ jobs:
   pipeline:
     runs-on: ubuntu-latest
     env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       # CI only (not listed in .env-example): unbuffered stdout/stderr
       PYTHONUNBUFFERED: "1"
       # Product Hunt API token (v2 developer token); same order as .env-example
@@ -68,7 +69,7 @@ jobs:
       AI_COMMENT_MAX_TOKENS: "768"
       # Optional: extra JSON merged into chat/completions body (gateway-specific); omit secret for empty
       OPENROUTER_CHAT_COMPLETIONS_EXTRA_JSON: ${{ secrets.OPENROUTER_CHAT_COMPLETIONS_EXTRA_JSON }}
-
+      
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
