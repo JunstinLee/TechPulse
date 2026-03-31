@@ -1,0 +1,14 @@
+# -----------------------------------------------------------------------------
+# Python: Requires version 3.10 or higher (for compatibility with async/typing usage and dependencies).
+
+# Local recommendation: py-3.12 -m venv .venv or python3.11 -m venv .venv
+
+# CI: setup-python in .github/workflows must be consistent with this.
+# -----------------------------------------------------------------------------
+requests
+python-dotenv
+diskcache
+jinja2
+httpx
+rich
+watchdog
