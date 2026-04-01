@@ -1,0 +1,61 @@
+# OpenRouter streaming TTFT benchmark (test/test_first_token_latency.py only).
+#
+# Purpose: run the same httpx streaming probe as locally, on GitHub-hosted runners,
+# to see if streams are cut off (e.g. LocalProtocolError / empty stream) and to
+# correlate with OpenRouter dashboard activity for the same API key.
+#
+# Secrets: only OPENROUTER_API_KEY is required (same as prism-pipeline.yml).
+# Trigger manually from the Actions tab.
+
+name: OpenRouter first-token latency (stream probe)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  stream-probe:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      PYTHONUNBUFFERED: "1"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      OPENROUTER_BASE_URL: "https://openrouter.ai/api/v1"
+      OPENROUTER_MODEL: "qwen/qwen3.6-plus-preview:free"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run streaming TTFT benchmark (sequential baseline)
+        run: |
+          python "$GITHUB_WORKSPACE/test/test_first_token_latency.py" \
+            --mode sequential \
+            --rounds 3 \
+            --warmup 1 \
+            --verbose \
+            --max-tokens 256
+
+      - name: Run streaming TTFT benchmark (concurrent, 3-way like pipeline)
+        run: |
+          python "$GITHUB_WORKSPACE/test/test_first_token_latency.py" \
+            --mode concurrent \
+            --concurrency 3 \
+            --rounds 2 \
+            --warmup 1 \
+            --verbose \
+            --max-tokens 256
