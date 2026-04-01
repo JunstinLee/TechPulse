@@ -17,11 +17,7 @@ permissions:
 
 jobs:
   stream-probe:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     env:
       PYTHONUNBUFFERED: "1"
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
