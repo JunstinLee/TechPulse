@@ -22,7 +22,7 @@ You can think of this project as a fully automated “information refinement” 
 
 **Collection.** The tool pulls the most visible repositories on GitHub, models on Hugging Face, and posts on Product Hunt from three of the busiest corners of the tech community.
 
-**Enrichment.** It does not stop at titles. It follows through to READMEs and baseline metadata on GitHub and Hugging Face, and full post bodies and descriptions on Product Hunt, so the source material is as complete as practical.
+**Enrichment.** It does not stop at titles. It follows through to GitHub READMEs, Hugging Face Model Cards, and baseline metadata, as well as full post bodies and descriptions on Product Hunt, ensuring the source material is as complete as practical.
 
 **AI analysis.** Through a pluggable API, the model reads that material, writes a short note for each item on what it actually is, and produces a bird’s-eye overview across everything captured in a run.
 
