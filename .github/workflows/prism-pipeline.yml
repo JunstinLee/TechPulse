@@ -18,7 +18,7 @@ name: TechDistill pipeline
 
 on:
   schedule:
-    - cron: "0 6 * * *" # Runs daily at 06:00 UTC
+    - cron: "0 6 * * *" # Runs daily at 08:28 UTC
   workflow_dispatch:      # Allows manual trigger via the UI
 
 permissions:
