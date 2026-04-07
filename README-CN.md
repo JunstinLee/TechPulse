@@ -74,7 +74,7 @@ graph LR
 
 仓库自带 [`.github/workflows/prism-pipeline.yml`](.github/workflows/prism-pipeline.yml)，可在 GitHub 托管 Runner 上跑完整流程：抓取、AI 分析、生成 Markdown 报告，以及可选的 Telegram 推送（执行 `main.py`）。
 
-- **定时：** `cron: "0 6 * * *"` — 每天在 **UTC 06:00** 运行一次（若要改时间，请直接修改 workflow 里的 cron）。
+- **定时：** `cron: "28 6 * * *"` — 每天在 **UTC 06:28** 运行一次（若要改时间，请直接修改 workflow 里的 cron）。
 - **手动：** 已启用 `workflow_dispatch`，可在 Actions 页面手动触发。
 - **密钥：** 在仓库的 Actions Secrets 中配置，与 workflow 文件顶部注释及根目录 [`.env-example`](.env-example) 对应。常见项包括 `PH_API_TOKEN`、`GH_TOKEN`（注入为环境变量 `GITHUB_TOKEN`）、`OPENROUTER_API_KEY`，以及可选的 `HF_TOKEN`、`TG_BOT_TOKEN`、`TG_CHAT_ID`、`OPENROUTER_CHAT_COMPLETIONS_EXTRA_JSON`。
 - **产物：** 默认任务不会把报告提交回分支；除非自行增加上传或推送步骤，否则报告仅存在于当次 Job 的运行环境中。

@@ -12,13 +12,13 @@
 #       OPENROUTER_CHAT_COMPLETIONS_EXTRA_JSON → secret OPENROUTER_CHAT_COMPLETIONS_EXTRA_JSON (Optional)
 #   - Non-secret items: Use default values from .env-example, defined directly in 'env'.
 #
-# Schedule is in UTC; modify the cron expression as needed.
+# Schedule: cron is UTC (minute hour day month weekday). Change the expression below as needed.
 
 name: TechDistill pipeline
 
 on:
   schedule:
-    - cron: "0 6 * * *" # Runs daily at 08:28 UTC
+    - cron: "28 6 * * *" # Daily at 06:28 UTC
   workflow_dispatch:      # Allows manual trigger via the UI
 
 permissions:
