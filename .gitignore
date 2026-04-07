@@ -214,3 +214,4 @@ plans/connection_stability_plan.md
 data/cache/telegram_push_state.json
 data/openrouter_probe/openrouter_probe_20260327_232820.jsonl
 result
+.DS_Store
