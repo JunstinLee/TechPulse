@@ -70,14 +70,24 @@ graph LR
 
 ---
 
+## GitHub Actions
+
+仓库自带 [`.github/workflows/prism-pipeline.yml`](.github/workflows/prism-pipeline.yml)，可在 GitHub 托管 Runner 上跑完整流程：抓取、AI 分析、生成 Markdown 报告，以及可选的 Telegram 推送（执行 `main.py`）。
+
+- **定时：** `cron: "0 6 * * *"` — 每天在 **UTC 06:00** 运行一次（若要改时间，请直接修改 workflow 里的 cron）。
+- **手动：** 已启用 `workflow_dispatch`，可在 Actions 页面手动触发。
+- **密钥：** 在仓库的 Actions Secrets 中配置，与 workflow 文件顶部注释及根目录 [`.env-example`](.env-example) 对应。常见项包括 `PH_API_TOKEN`、`GH_TOKEN`（注入为环境变量 `GITHUB_TOKEN`）、`OPENROUTER_API_KEY`，以及可选的 `HF_TOKEN`、`TG_BOT_TOKEN`、`TG_CHAT_ID`、`OPENROUTER_CHAT_COMPLETIONS_EXTRA_JSON`。
+- **产物：** 默认任务不会把报告提交回分支；除非自行增加上传或推送步骤，否则报告仅存在于当次 Job 的运行环境中。
+
+---
+
 ## 路线图
 
-当前版本已经能抓取各项信息源热门项目的详细信息，将信息给AI进行分析，生成去除噪音的文本内容并推送。但是这个项目不止于此
+当前版本已经能抓取各信息源的详情，经 AI 生成降噪内容与总览，支持通知推送，并可通过 **GitHub Actions 每日定时**运行完整流水线。
 
 后续计划包括：
 
-- [ ] 增加自动调度能力
-- [ ] 补充 GitHub Actions或者Docker file 或其他方案
+- [ ] Docker 镜像或其它部署方式
 - [ ] 强化历史状态管理与去重
 - [ ] 引入个性化上下文和偏好权重
 - [ ] 增加趋势聚类、主题归纳和 anti-hype 过滤
