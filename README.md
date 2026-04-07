@@ -96,6 +96,8 @@ Planned work includes:
 
 ## Quick start
 
+**OpenRouter — model choice (read this).** On **GitHub Actions**, **do not use free / `:free` models**. Runners are usually on **Microsoft Azure**; OpenRouter applies **strict limits on concurrent requests from that region**. For [`.github/workflows/openrouter-first-token-latency.yml`](.github/workflows/openrouter-first-token-latency.yml), which runs `test/test_first_token_latency.py`, **every run that used a free model has failed—there has never been a successful finish.** Use a **low-cost paid** model id with the same workflow. Apply the same rule to `OPENROUTER_MODEL`, `OVERVIEW_MODEL`, and any model you set in Actions env/secrets when you rely on CI or concurrency.
+
 ### 1. Install dependencies
 
 ```bash

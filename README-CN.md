@@ -97,6 +97,8 @@ graph LR
 
 ## 快速开始
 
+**OpenRouter — 模型选择（必读）。** 在 **GitHub Actions** 上使用 OpenRouter 时，**不要使用免费或 `:free` 模型**。托管 Runner 通常位于 **Azure** 机房，OpenRouter 对来自该机房的 **并发请求限制非常严格**。针对本仓库的 [`.github/workflows/openrouter-first-token-latency.yml`](.github/workflows/openrouter-first-token-latency.yml)（运行 `test/test_first_token_latency.py`）：**凡是选用免费模型的运行全部失败，从未有一次成功跑通**；请只使用 **低价付费** 模型 ID，workflow 其余配置可不变。对 `OPENROUTER_MODEL`、`OVERVIEW_MODEL` 以及 Actions 环境变量/密钥里的模型，在 CI 与并发场景下同样**禁止**依赖免费档。
+
 ### 1. 安装依赖
 
 ```bash
