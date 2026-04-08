@@ -60,7 +60,7 @@ graph LR
 
 When Telegram push is configured, each Markdown report is delivered as a file attachment in chat. Example (TechPulse bot):
 
-![TechDistill report notifications in Telegram](RESULT.jpg)
+<img src="RESULT.jpg" alt="TechDistill report notifications in Telegram" width="400">
 
 ---
 
