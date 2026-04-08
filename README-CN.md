@@ -57,6 +57,14 @@ graph LR
 
 ---
 
+## Telegram 推送效果
+
+配置 Telegram 后，各份 Markdown 报告会以文件附件形式推送到会话中。下图为 TechPulse 机器人示例：
+
+![TechDistill 在 Telegram 中的报告推送效果](RESULT.jpg)
+
+---
+
 ## 技术栈
 
 - `Python 3.10+`
