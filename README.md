@@ -75,7 +75,7 @@ The repository includes [`.github/workflows/prism-pipeline.yml`](.github/workflo
 
 - **Schedule:** `cron: "28 6 * * *"` — once per day at **06:28 UTC** (adjust the expression in the workflow file if you want a different time).
 - **Manual runs:** `workflow_dispatch` is enabled so you can start a run from the Actions tab.
-- **Secrets:** Configure repository secrets to match your needs (see the comments at the top of the workflow file and [`.env-example`](.env-example)). Typical values include `PH_API_TOKEN`, `GH_TOKEN` (injected as `GITHUB_TOKEN`), `OPENROUTER_API_KEY`, and optionally `HF_TOKEN`, `TG_BOT_TOKEN`, `TG_CHAT_ID`, and `OPENROUTER_CHAT_COMPLETIONS_EXTRA_JSON`.
+- **Secrets:** Configure repository secrets to match your needs (see the comments at the top of the workflow file and [`.env-example`](.env-example)). Typical values include `PH_API_TOKEN`, `GH_TOKEN` (injected as `GITHUB_TOKEN`), `OPENROUTER_API_KEY`, and optionally `HF_TOKEN`, `TG_BOT_TOKEN`, `TG_CHAT_ID`, and `OPENROUTER_CHAT_COMPLETIONS_EXTRA_JSON`. **How to obtain each credential** is documented in [**`Access_Token/en.md`**](Access_Token/en.md) (English)。
 - **Artifacts:** The default job does not commit reports to the branch; output exists for that run on the runner unless you add upload/push steps.
 
 ---
@@ -105,6 +105,8 @@ pip install -r requirements.txt
 ```
 
 ### 2. Environment variables
+
+**Credentials tutorial:** For full instructions on obtaining every token and secret used below (Product Hunt, GitHub, Hugging Face, OpenRouter, Telegram), see [**`Access_Token/en.md`**](Access_Token/en.md) (English) and [**`Access_Token/cn.md`**](Access_Token/cn.md) (简体中文).
 
 Copy `.env-example` to `.env` and fill in your values. The block below matches the repository `.env-example` (comments and placeholders included):
 

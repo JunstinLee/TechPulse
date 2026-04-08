@@ -76,7 +76,7 @@ graph LR
 
 - **定时：** `cron: "28 6 * * *"` — 每天在 **UTC 06:28** 运行一次（若要改时间，请直接修改 workflow 里的 cron）。
 - **手动：** 已启用 `workflow_dispatch`，可在 Actions 页面手动触发。
-- **密钥：** 在仓库的 Actions Secrets 中配置，与 workflow 文件顶部注释及根目录 [`.env-example`](.env-example) 对应。常见项包括 `PH_API_TOKEN`、`GH_TOKEN`（注入为环境变量 `GITHUB_TOKEN`）、`OPENROUTER_API_KEY`，以及可选的 `HF_TOKEN`、`TG_BOT_TOKEN`、`TG_CHAT_ID`、`OPENROUTER_CHAT_COMPLETIONS_EXTRA_JSON`。
+- **密钥：** 在仓库的 Actions Secrets 中配置，与 workflow 文件顶部注释及根目录 [`.env-example`](.env-example) 对应。常见项包括 `PH_API_TOKEN`、`GH_TOKEN`（注入为环境变量 `GITHUB_TOKEN`）、`OPENROUTER_API_KEY`，以及可选的 `HF_TOKEN`、`TG_BOT_TOKEN`、`TG_CHAT_ID`、`OPENROUTER_CHAT_COMPLETIONS_EXTRA_JSON`。**各项凭证的获取教程**见 [**`Access_Token/cn.md`**](Access_Token/cn.md)（简体中文。
 - **产物：** 默认任务不会把报告提交回分支；除非自行增加上传或推送步骤，否则报告仅存在于当次 Job 的运行环境中。
 
 ---
@@ -106,6 +106,8 @@ pip install -r requirements.txt
 ```
 
 ### 2. 配置环境变量
+
+**密钥教程：** 下文涉及的各类 API Token 与 Secret 的完整获取步骤见 [**`Access_Token/cn.md`**](Access_Token/cn.md)（简体中文）与 [**`Access_Token/en.md`**](Access_Token/en.md)（English）。
 
 建议复制 `.env-example` 为 `.env` 并按需填写。以下示例与仓库内 `.env-example` 保持一致（含注释与占位符）：
 
