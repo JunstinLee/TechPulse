@@ -227,7 +227,11 @@ reports/
 - `ph.md` — Product Hunt report
 
 ---
+## Support Me
+If this project has saved you time or solved a problem, please consider supporting its ongoing development. Your contributions help cover infrastructure costs and allow me to dedicate more time to maintaining and improving the software for everyone.
 
+<script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="leejustin" data-color="#FFDD00" data-emoji="☕"  data-font="Cookie" data-text="Buy me a coffee" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff" ></script>
+---
 ## License
 
 [MIT License](LICENSE)
