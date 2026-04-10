@@ -230,7 +230,7 @@ reports/
 ## Support Me
 If this project has saved you time or solved a problem, please consider supporting its ongoing development. Your contributions help cover infrastructure costs and allow me to dedicate more time to maintaining and improving the software for everyone.
 
-<script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="leejustin" data-color="#FFDD00" data-emoji="☕"  data-font="Cookie" data-text="Buy me a coffee" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff" ></script>
+[![Buy Me a Coffee](https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=&slug=leejustin&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff)](https://www.buymeacoffee.com/leejustin)
 ---
 ## License
 
